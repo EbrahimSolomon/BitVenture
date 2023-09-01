@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\BitVenture_EbrahimSolomon.props" />
+</Project>

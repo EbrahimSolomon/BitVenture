@@ -1,0 +1,100 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Import File</h2>
+<div class="container mt-3">
+    <form method="post" enctype="multipart/form-data" id="uploadForm">
+        <div class="form-group">
+            <label for="csvFile">Choose a CSV file:</label>
+            <input type="file" class="form-control-file" name="csvFile" id="csvFile" accept=".csv" required />
+        </div>
+        <input type="submit" class="btn btn-primary" value="Upload" />
+    </form>
+</div>
+
+<!-- Progress Dialog -->
+<div class="modal" tabindex="-1" role="dialog" id="progressDialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p>Uploading... <button class="btn btn-danger" id="cancelBtn">Cancel</button></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Dialog -->
+<div class="modal" tabindex="-1" role="dialog" id="successDialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p>File uploaded successfully</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="okBtn">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        const form = document.getElementById('uploadForm');
+        const progressDialog = $('#progressDialog');
+        const successDialog = $('#successDialog');
+        const cancelBtn = $('#cancelBtn');
+        const okBtn = $('#okBtn');
+
+        let uploadAbortController;
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            console.log("Form submission triggered");
+
+            if (!form.csvFile.files.length) {
+                console.log("No files selected");
+                return;
+            }
+
+            uploadAbortController = new AbortController();
+
+            const formData = new FormData(form);
+            console.log("Showing progress dialog");
+            progressDialog.modal('show');
+
+            try {
+                console.log("Making fetch request");
+                const response = await fetch('/api/Import/UploadFile', {
+                    method: 'POST',
+                    body: formData,
+                    signal: uploadAbortController.signal
+                });
+
+                if (response.ok) {
+                    console.log("Fetch request successful");
+                    progressDialog.modal('hide');
+                    successDialog.modal('show');
+                } else {
+                    console.error('Upload failed with status:', response.status);
+                }
+            } catch (err) {
+                console.error('Upload error:', err);
+            }
+        };
+
+        cancelBtn.onclick = () => {
+            if (uploadAbortController) {
+                console.log("Upload aborted");
+                uploadAbortController.abort();
+                progressDialog.modal('hide');
+            }
+        };
+
+        okBtn.onclick = () => {
+            console.log("Closing success dialog");
+            successDialog.modal('hide');
+        };
+    </script>
+}

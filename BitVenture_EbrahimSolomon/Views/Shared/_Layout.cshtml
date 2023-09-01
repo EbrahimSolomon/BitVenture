@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+</head>
+<body>
+
+    <div class="container">
+        <div class="navigation">
+            <ul>
+                <li><a href="@Url.Action("ImportFile", "Home")">Import File</a></li>
+                <li><a href="@Url.Action("ViewImports", "Home")">View Imports</a></li>
+                <li><a href="@Url.Action("Report", "Home")">Report</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            @RenderBody()
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".master-record").click(function () {
+                var masterRecordId = $(this).data("id");
+                $.ajax({
+                    url: "/api/Import/GetDetailRecords",
+                    type: "GET",
+                    data: { id: masterRecordId },
+                    dataType: "json",
+                    success: function (data) {
+                        console.log(data);
+                        updateDetailGrid(data);
+                    }
+                });
+            });
+        });
+        
+        $(document).ready(function () {
+            $(".report-link").click(function (e) {
+                e.preventDefault();
+                $.ajax({
+                    url: "/api/Home/Report",
+                    type: "GET",
+                    success: function (data) {
+                        $(".content").html(data);
+                    }
+                });
+            });
+        });
+
+
+        function updateDetailGrid(data) {
+            var $detailTableBody = $(".table.detail-table tbody");
+            $detailTableBody.empty();
+
+            $.each(data, function (index, record) {
+                var transactionDate = new Date(record.transactionDate).toLocaleDateString();
+                var effectiveStatusDate = new Date(record.effectiveStatusDate).toLocaleDateString();
+
+                var timeBreached = new Date(record.effectiveStatusDate) - new Date(record.transactionDate) > 7 * 24 * 60 * 60 * 1000 ? "Yes" : "No";
+                var statusDisplay = getStatusDisplay(record.status);
+                var row = `
+        <tr>
+            <td>${transactionDate}</td>
+            <td>${record.amount}</td>
+            <td>${statusDisplay}</td> 
+            <td>${effectiveStatusDate}</td>
+            <td>${timeBreached}</td>
+        </tr>`;
+                $detailTableBody.append(row);
+            });
+        }
+
+        function getStatusDisplay(status) {
+            switch (status) {
+                case "00": return "Successful";
+                case "30": return "Disputed";
+                default: return "Failed";
+            }
+        }
+    </script>
+    @RenderSection("scripts", required: false)
+    @RenderSection("styles", required: false)
+</body>
+</html>

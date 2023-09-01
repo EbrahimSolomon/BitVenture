@@ -1,0 +1,29 @@
+﻿@model IEnumerable<ReportViewModel>
+
+<h2>Report</h2>
+
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Branch Code</th>
+            <th>Account Type</th>
+            <th>Status</th>
+            <th>Total Count</th>
+            <th>Total Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var record in Model)
+        {
+            <tr>
+                <td>@record.BranchCode</td>
+                <td>@record.AccountTypeDisplayName</td>
+                <td>@record.Status</td>
+                <td>@record.TotalCount</td>
+                <td>@record.TotalAmount</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
